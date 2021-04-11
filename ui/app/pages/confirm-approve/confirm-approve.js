@@ -117,7 +117,9 @@ export default function ConfirmApprove() {
     ? getCustomTxParamsData(data, { customPermissionAmount, decimals })
     : null;
 
-  return tokenSymbol ? (
+  return tokenSymbol === undefined ? (
+    <Loading />
+  ) : (
     <ConfirmTransactionBase
       toAddress={toAddress}
       identiconAddress={tokenAddress}
@@ -199,7 +201,5 @@ export default function ConfirmApprove() {
       hideSenderToRecipient
       customTxParamsData={customData}
     />
-  ) : (
-    <Loading />
   );
 }

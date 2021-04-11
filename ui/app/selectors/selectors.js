@@ -5,7 +5,14 @@ import {
   MAINNET_CHAIN_ID,
   TEST_CHAINS,
   NETWORK_TYPE_RPC,
+  NATIVE_CURRENCY_TOKEN_IMAGE_MAP,
 } from '../../../shared/constants/network';
+
+import {
+  SWAPS_CHAINID_DEFAULT_TOKEN_MAP,
+  ALLOWED_SWAPS_CHAIN_IDS,
+} from '../../../shared/constants/swaps';
+
 import {
   shortenAddress,
   checksumAddress,
@@ -15,10 +22,10 @@ import {
   getValueFromWeiHex,
   hexToDecimal,
 } from '../helpers/utils/conversions.util';
-import {
-  SWAPS_CHAINID_DEFAULT_TOKEN_MAP,
-  ALLOWED_SWAPS_CHAIN_IDS,
-} from '../../../shared/constants/swaps';
+
+import { TEMPLATED_CONFIRMATION_MESSAGE_TYPES } from '../pages/confirmation/templates';
+
+import { getNativeCurrency } from './send';
 
 /**
  * One of the only remaining valid uses of selecting the network subkey of the
@@ -325,6 +332,13 @@ export function getUnapprovedConfirmations(state) {
   return Object.values(pendingApprovals);
 }
 
+export function getUnapprovedTemplatedConfirmations(state) {
+  const unapprovedConfirmations = getUnapprovedConfirmations(state);
+  return unapprovedConfirmations.filter((approval) =>
+    TEMPLATED_CONFIRMATION_MESSAGE_TYPES.includes(approval.type),
+  );
+}
+
 function getSuggestedTokenCount(state) {
   const { suggestedTokens = {} } = state.metamask;
   return Object.keys(suggestedTokens).length;
@@ -466,6 +480,11 @@ export function getSwapsDefaultToken(state) {
 export function getIsSwapsChain(state) {
   const chainId = getCurrentChainId(state);
   return ALLOWED_SWAPS_CHAIN_IDS[chainId];
+}
+
+export function getNativeCurrencyImage(state) {
+  const nativeCurrency = getNativeCurrency(state).toUpperCase();
+  return NATIVE_CURRENCY_TOKEN_IMAGE_MAP[nativeCurrency];
 }
 
 export function getNextSuggestedNonce(state) {
