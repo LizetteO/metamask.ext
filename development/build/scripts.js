@@ -249,7 +249,6 @@ function createNormalBundle({
     const lavamoatTargets = ['background'];
 
     if (lavamoatTargets.includes(label)) {
-      console.log(label)
       Object.assign(bundlerOpts, lavamoat.args);
     }
 
