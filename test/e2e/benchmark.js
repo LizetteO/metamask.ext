@@ -4,7 +4,7 @@ const path = require('path');
 const { promises: fs, constants: fsConstants } = require('fs');
 const ttest = require('ttest');
 const { By, Key } = require('selenium-webdriver');
-const { withFixtures } = require('./helpers');
+const { withFixtures, tinyDelayMs } = require('./helpers');
 const { PAGES } = require('./webdriver/driver');
 
 const DEFAULT_NUM_SAMPLES = 20;
@@ -13,6 +13,7 @@ const ALL_PAGES = Object.values(PAGES);
 async function measurePage(pageName) {
   let metrics;
   await withFixtures({ fixtures: 'imported-account' }, async ({ driver }) => {
+    await driver.delay(tinyDelayMs);
     await driver.navigate();
     const passwordField = await driver.findElement(By.css('#password'));
     await passwordField.sendKeys('correct horse battery staple');
