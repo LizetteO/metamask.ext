@@ -1,6 +1,6 @@
 const { strict: assert } = require('assert');
 const { By, Key } = require('selenium-webdriver');
-const { withFixtures, regularDelayMs, xLargeDelayMs } = require('../helpers');
+const { withFixtures, regularDelayMs, xxLargeDelayMs } = require('../helpers');
 
 describe('MetaMask', function () {
   it('provider should inform dapp when switching networks', async function () {
@@ -29,7 +29,7 @@ describe('MetaMask', function () {
         await driver.openNewPage('http://127.0.0.1:8080/');
         const networkDiv = await driver.findElement(By.css('#network'));
         const chainIdDiv = await driver.findElement(By.css('#chainId'));
-        await driver.delay(xLargeDelayMs)
+        await driver.delay(xxLargeDelayMs)
         assert.equal(await networkDiv.getText(), '1337');
         assert.equal(await chainIdDiv.getText(), '0x539');
 

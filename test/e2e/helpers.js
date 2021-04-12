@@ -12,6 +12,7 @@ const tinyDelayMs = 200;
 const regularDelayMs = tinyDelayMs * 2;
 const largeDelayMs = regularDelayMs * 2;
 const xLargeDelayMs = largeDelayMs * 2;
+const xxLargeDelayMs = xLargeDelayMs * 2;
 
 const dappPort = 8080;
 
@@ -117,5 +118,6 @@ module.exports = {
   regularDelayMs,
   largeDelayMs,
   xLargeDelayMs,
+  xxLargeDelayMs,
   withFixtures,
 };
