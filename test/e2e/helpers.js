@@ -11,6 +11,7 @@ const { buildWebDriver } = require('./webdriver');
 const tinyDelayMs = 200;
 const regularDelayMs = tinyDelayMs * 2;
 const largeDelayMs = regularDelayMs * 2;
+const xLargeDelayMs = largeDelayMs * 2;
 
 const dappPort = 8080;
 
@@ -115,5 +116,6 @@ module.exports = {
   tinyDelayMs,
   regularDelayMs,
   largeDelayMs,
+  xLargeDelayMs,
   withFixtures,
 };

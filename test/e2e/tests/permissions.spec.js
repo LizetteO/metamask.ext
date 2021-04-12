@@ -1,8 +1,6 @@
 const { strict: assert } = require('assert');
 const { By, Key } = require('selenium-webdriver');
-const { withFixtures } = require('../helpers');
-const { promisify } = require('util')
-const nextTick = promisify(process.nextTick);
+const { withFixtures, xLargeDelayMs } = require('../helpers');
 
 describe('Permissions', function () {
   it('sets permissions and connect to Dapp', async function () {
@@ -37,7 +35,7 @@ describe('Permissions', function () {
         await driver.waitUntilXWindowHandles(3);
         const windowHandles = await driver.getAllWindowHandles();
         const extension = windowHandles[0];
-        await nextTick()
+        await driver.delay(xLargeDelayMs);
         await driver.switchToWindowWithTitle(
           'MetaMask Notification',
           windowHandles,
