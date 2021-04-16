@@ -1,7 +1,5 @@
 const assert = require('assert');
-const webdriver = require('selenium-webdriver');
 
-const { By, until } = webdriver;
 const enLocaleMessages = require('../../app/_locales/en/messages.json');
 const { tinyDelayMs, regularDelayMs, largeDelayMs } = require('./helpers');
 const { buildWebDriver } = require('./webdriver');
@@ -59,71 +57,69 @@ describe('MetaMask', function () {
 
   describe('Going through the first time flow, but skipping the seed phrase challenge', function () {
     it('clicks the continue button on the welcome screen', async function () {
-      await driver.findElement(By.css('.welcome-page__header'));
-      await driver.clickElement(
-        By.xpath(
-          `//button[contains(text(), '${enLocaleMessages.getStarted.message}')]`,
-        ),
-      );
+      await driver.findElement('.welcome-page__header');
+      await driver.clickElement({
+        text: enLocaleMessages.getStarted.message,
+        tag: 'button',
+      });
       await driver.delay(largeDelayMs);
     });
 
     it('clicks the "Create New Wallet" option', async function () {
-      await driver.clickElement(
-        By.xpath(`//button[contains(text(), 'Create a Wallet')]`),
-      );
+      await driver.clickElement({ text: 'Create a Wallet', tag: 'button' });
       await driver.delay(largeDelayMs);
     });
 
     it('clicks the "No thanks" option on the metametrics opt-in screen', async function () {
-      await driver.clickElement(By.css('.btn-default'));
+      await driver.clickElement('.btn-default');
       await driver.delay(largeDelayMs);
     });
 
     it('accepts a secure password', async function () {
-      const passwordBox = await driver.findElement(
-        By.css('.first-time-flow__form #create-password'),
+      await driver.fill(
+        '.first-time-flow__form #create-password',
+        'correct horse battery staple',
       );
-      const passwordBoxConfirm = await driver.findElement(
-        By.css('.first-time-flow__form #confirm-password'),
+      await driver.fill(
+        '.first-time-flow__form #confirm-password',
+        'correct horse battery staple',
       );
 
-      await passwordBox.sendKeys('correct horse battery staple');
-      await passwordBoxConfirm.sendKeys('correct horse battery staple');
+      await driver.clickElement('.first-time-flow__checkbox');
 
-      await driver.clickElement(By.css('.first-time-flow__checkbox'));
+      await driver.clickElement('.first-time-flow__form button');
+      await driver.delay(regularDelayMs);
+    });
 
-      await driver.clickElement(By.css('.first-time-flow__form button'));
+    it('renders the seed phrase intro screen', async function () {
+      await driver.clickElement('.seed-phrase-intro__left button');
       await driver.delay(regularDelayMs);
     });
 
     it('skips the seed phrase challenge', async function () {
-      await driver.clickElement(
-        By.xpath(
-          `//button[contains(text(), '${enLocaleMessages.remindMeLater.message}')]`,
-        ),
-      );
+      await driver.clickElement({
+        text: enLocaleMessages.remindMeLater.message,
+        tag: 'button',
+      });
       await driver.delay(regularDelayMs);
 
+      await driver.clickElement('[data-testid="account-options-menu-button"]');
       await driver.clickElement(
-        By.css('[data-testid="account-options-menu-button"]'),
-      );
-      await driver.clickElement(
-        By.css('[data-testid="account-options-menu__account-details"]'),
+        '[data-testid="account-options-menu__account-details"]',
       );
     });
 
     it('gets the current accounts address', async function () {
-      const addressInput = await driver.findElement(
-        By.css('.readonly-input__input'),
-      );
+      const addressInput = await driver.findElement('.readonly-input__input');
       publicAddress = await addressInput.getAttribute('value');
 
-      const accountModal = await driver.findElement(By.css('span .modal'));
+      // wait for account modal to be visible
+      const accountModal = await driver.findVisibleElement('span .modal');
 
-      await driver.clickElement(By.css('.account-modal__close'));
+      await driver.clickElement('.account-modal__close');
 
-      await driver.wait(until.stalenessOf(accountModal));
+      // wait for account modal to be removed from DOM
+      await accountModal.waitForElementState('hidden');
       await driver.delay(regularDelayMs);
     });
   });
@@ -140,14 +136,14 @@ describe('MetaMask', function () {
     });
 
     it('sends eth to the current account', async function () {
-      const addressInput = await driver.findElement(By.css('#address'));
-      await addressInput.sendKeys(publicAddress);
+      await driver.fill('#address', publicAddress);
       await driver.delay(regularDelayMs);
+      await driver.clickElement('#send');
 
-      await driver.clickElement(By.css('#send'));
-
-      const txStatus = await driver.findElement(By.css('#success'));
-      await driver.wait(until.elementTextMatches(txStatus, /Success/u), 15000);
+      await driver.waitForSelector(
+        { css: '#success', text: 'Success' },
+        { timeout: 15000 },
+      );
     });
 
     it('switches back to MetaMask', async function () {
@@ -155,60 +151,55 @@ describe('MetaMask', function () {
     });
 
     it('should have the correct amount of eth', async function () {
-      const balances = await driver.findElements(
-        By.css('.currency-display-component__text'),
-      );
-      await driver.wait(until.elementTextMatches(balances[0], /1/u), 15000);
-      const balance = await balances[0].getText();
+      const currencyDisplay = await driver.waitForSelector({
+        css: '.currency-display-component__text',
+        text: '1',
+      });
+      const balance = await currencyDisplay.getText();
 
-      assert.equal(balance, '1');
+      assert.strictEqual(balance, '1');
     });
   });
 
   describe('backs up the seed phrase', function () {
     it('should show a backup reminder', async function () {
-      const backupReminder = await driver.findElements(
-        By.xpath(
+      const backupReminder = await driver.findElements({
+        xpath:
           "//div[contains(@class, 'home-notification__text') and contains(text(), 'Backup your Secret Recovery code to keep your wallet and funds secure')]",
-        ),
-      );
+      });
       assert.equal(backupReminder.length, 1);
     });
 
     it('should take the user to the seedphrase backup screen', async function () {
-      await driver.clickElement(By.css('.home-notification__accept-button'));
+      await driver.clickElement('.home-notification__accept-button');
       await driver.delay(regularDelayMs);
     });
 
     let seedPhrase;
 
     it('reveals the seed phrase', async function () {
-      const byRevealButton = By.css(
+      await driver.clickElement(
         '.reveal-seed-phrase__secret-blocker .reveal-seed-phrase__reveal-button',
       );
-      await driver.clickElement(byRevealButton);
       await driver.delay(regularDelayMs);
 
       const revealedSeedPhrase = await driver.findElement(
-        By.css('.reveal-seed-phrase__secret-words'),
+        '.reveal-seed-phrase__secret-words',
       );
       seedPhrase = await revealedSeedPhrase.getText();
       assert.equal(seedPhrase.split(' ').length, 12);
       await driver.delay(regularDelayMs);
 
-      await driver.clickElement(
-        By.xpath(
-          `//button[contains(text(), '${enLocaleMessages.next.message}')]`,
-        ),
-      );
+      await driver.clickElement({
+        text: enLocaleMessages.next.message,
+        tag: 'button',
+      });
       await driver.delay(regularDelayMs);
     });
 
     async function clickWordAndWait(word) {
       await driver.clickElement(
-        By.css(
-          `[data-testid="seed-phrase-sorted"] [data-testid="draggable-seed-${word}"]`,
-        ),
+        `[data-testid="seed-phrase-sorted"] [data-testid="draggable-seed-${word}"]`,
       );
       await driver.delay(tinyDelayMs);
     }
@@ -220,31 +211,27 @@ describe('MetaMask', function () {
         await clickWordAndWait(word);
       }
 
-      await driver.clickElement(
-        By.xpath(`//button[contains(text(), 'Confirm')]`),
-      );
+      await driver.clickElement({ text: 'Confirm', tag: 'button' });
       await driver.delay(regularDelayMs);
     });
 
     it('can click through the success screen', async function () {
-      await driver.clickElement(
-        By.xpath(`//button[contains(text(), 'All Done')]`),
-      );
+      await driver.clickElement({ text: 'All Done', tag: 'button' });
       await driver.delay(regularDelayMs);
     });
 
     it('should have the correct amount of eth', async function () {
-      const balances = await driver.findElements(
-        By.css('.currency-display-component__text'),
-      );
-      await driver.wait(until.elementTextMatches(balances[0], /1/u), 15000);
-      const balance = await balances[0].getText();
+      const currencyDisplay = await driver.waitForSelector({
+        css: '.currency-display-component__text',
+        text: '1',
+      });
+      const balance = await currencyDisplay.getText();
 
-      assert.equal(balance, '1');
+      assert.strictEqual(balance, '1');
     });
 
     it('should not show a backup reminder', async function () {
-      await driver.assertElementNotPresent(By.css('.backup-notification'));
+      await driver.assertElementNotPresent('.backup-notification');
     });
   });
 });

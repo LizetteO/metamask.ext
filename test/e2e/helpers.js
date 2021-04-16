@@ -24,6 +24,7 @@ async function withFixtures(options, testSuite) {
     driverOptions,
     mockSegment,
     title,
+    failOnConsoleError = true,
   } = options;
   const fixtureServer = new FixtureServer();
   const ganacheServer = new Ganache();
@@ -79,7 +80,11 @@ async function withFixtures(options, testSuite) {
         const errorMessage = `Errors found in browser console:\n${errorReports.join(
           '\n',
         )}`;
-        throw new Error(errorMessage);
+        if (failOnConsoleError) {
+          throw new Error(errorMessage);
+        } else {
+          console.error(new Error(errorMessage));
+        }
       }
     }
   } catch (error) {
