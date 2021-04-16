@@ -31,7 +31,7 @@ describe('Segment metrics', function () {
         const threeSegmentEventsReceived = waitUntilCalled(segmentStub, null, {
           callCount: 3,
         });
-        await driver.delay(tinyDelayMs)
+        await driver.delay(tinyDelayMs);
         await driver.navigate();
 
         const passwordField = await driver.findElement(By.css('#password'));
